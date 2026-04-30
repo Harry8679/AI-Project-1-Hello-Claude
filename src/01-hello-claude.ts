@@ -5,9 +5,11 @@ dotenv.config();
 
 console.log("Clé chargée :", process.env.ANTHROPIC_API_KEY ? "OUI" : "NON");
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+// Avec Anthropic (dès que les crédits sont actifs)
+// const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// Avec Groq (maintenant, gratuit, même résultat)
+const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 async function askClaude(question: string): Promise<void> {
   console.log(`\nQuestion : ${question}\n`);
