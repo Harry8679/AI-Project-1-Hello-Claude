@@ -12,38 +12,34 @@ console.log("Clé chargée :", process.env.ANTHROPIC_API_KEY ? "OUI" : "NON");
 // Avec Groq (maintenant, gratuit, même résultat)
 const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-async function askClaude(question: string): Promise<void> {
-  console.log(`\nQuestion : ${question}\n`);
-  console.log("Réponse :\n");
-
-  try {
-    const stream = client.messages.stream({
-      model: "claude-opus-4-5",
-      max_tokens: 1024,
-      system: "Tu es un expert en développement web. Réponds en français, de façon concise.",
-      messages: [
-        { role: "user", content: question }
-      ],
-    });
-
-    for await (const chunk of stream) {
-      if (
-        chunk.type === "content_block_delta" &&
-        chunk.delta.type === "text_delta"
-      ) {
-        process.stdout.write(chunk.delta.text);
+async function askAI(question: string): Promise<void> {
+    console.log(`\nQuestion : ${question}\n`);
+    console.log("Réponse :\n");
+  
+    try {
+      const stream = await client.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          {
+            role: "system",
+            content: "Tu es un expert en développement web. Réponds en français, de façon concise."
+          },
+          { role: "user", content: question }
+        ],
+        stream: true,
+      });
+  
+      for await (const chunk of stream) {
+        process.stdout.write(chunk.choices[0]?.delta?.content || "");
       }
+  
+      console.log("\n\nTerminé !");
+  
+    } catch (error) {
+      console.error("ERREUR :", error);
     }
-
-    const finalMessage = await stream.finalMessage();
-    console.log("\n\n---");
-    console.log(`Tokens : ${finalMessage.usage.input_tokens} input / ${finalMessage.usage.output_tokens} output`);
-
-  } catch (error) {
-    console.error("ERREUR :", error);
   }
-}
-
-(async () => {
-  await askClaude("Explique-moi c'est quoi un RAG en 5 lignes pour un développeur Node.js");
-})();
+  
+  (async () => {
+    await askAI("Explique-moi c'est quoi un RAG en 5 lignes pour un développeur Node.js");
+  })();
